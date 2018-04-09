@@ -1,0 +1,58 @@
+#!/bin/bash
+
+set -e
+
+clone() {
+    IFS='/' 
+    url=$1
+    project=$2 
+    printf "Args:$url $project\n"
+    read -r group projectname <<< "$project" 
+
+     
+    if [ -z "$projectname" ]
+    then
+        printf "1\n"
+        printf "cloning: $url\n"
+        git clone "$url"
+        # if [ -d "$projectname" ] 
+        # then
+        #     printf "cloning: $url\n"
+        #     git clone "$url"
+        # else 
+        #     printf "project already exists.."
+        # fi
+        
+    else
+        printf "2\n"
+        mkdir -p "$group"
+        pushd "$group"
+        pwd
+        printf "Group:$group\n"
+        printf "Url:$url\n"
+        printf "Projectname:$projectname\n"    
+        clone "$url" "$projectname"
+        popd
+    fi
+}
+
+
+projects=($(awk '{print $1}' ./projects))
+projects_count=${#projects[@]}
+
+source ./env
+echo $PROJECT_ROOT
+cd $PROJECT_ROOT
+echo $PWD
+
+for ((i=0; i<$projects_count; i++)); do
+    printf "Cloning ${projects[i]}\n"
+    url="git@${GIT_HOST}:${projects[i]}.git"
+    printf "***$url\n"
+
+    clone "$url" "${projects[i]}"
+done
+
+
+
+
